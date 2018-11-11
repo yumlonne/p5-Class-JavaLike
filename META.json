@@ -52,6 +52,17 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/yumlonne/p5-Class-JavaLike/issues"
+      },
+      "homepage" : "https://github.com/yumlonne/p5-Class-JavaLike",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/yumlonne/p5-Class-JavaLike.git",
+         "web" : "https://github.com/yumlonne/p5-Class-JavaLike"
+      }
+   },
    "version" : "0.01",
    "x_serialization_backend" : "JSON::PP version 2.97001",
    "x_static_install" : 1
