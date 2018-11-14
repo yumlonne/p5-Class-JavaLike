@@ -19,29 +19,42 @@ keywords
 
 =cut
 
+sub class {
+    my ($class_name, @after) = @_;
+    my $body = pop @after;
+    my @extends = \@after;
+
+    Class::JavaLike::Builder->build_class({
+        class_name => $class_name,
+        extends    => $extends,
+        body       => $body,
+    });
+}
+
+1;
+__END__
+
 abstract_class LinkedList => sub {
-    abstract head => Any;
-    abstract tail => LinkedList;
-    abstract each => CODE => Any;
+    abstract head => type->Any;
+    abstract tail => type->LinkedList;
+    abstract each => type->Sub => type->Any;
 
     public from_arrayref => Any => LinkedList => method {
         my ($self, $arrayref) = @_;
         my $size = @$arrayref;
         if ($size == 0) {
-            return class('Nil')->new;
+            return new('Nil');
         }
         else ($size == 1) {
-            return class('Cons')->new(shift $arrayref, class('Nil')->new);
+            return new(Cons => shift $arrayref, new('Nil'));
         }
         else {
-            my $linked_list = class('Nil')->new;
+            my $linked_list = new('Nil');
             while (my $elem = pop $arrayref) {
-                $linked_list = class('Cons')->new($elem, $linked_list);
+                $linked_list = new('Cons' => $elem, $linked_list);
             }
-
             return $linked_list;
         }
-        
     };
 };
 
@@ -50,7 +63,8 @@ class Cons => extends LinkedList => sub {
         head => Any,
         tail => LinkedList,
     );
-    public new => Any => LinkedList => Cons => constructor {
+
+    constructor Any => LinkedList => Cons => method {
         my ($self, $head, $tail) = @_;
         $self->head = $head;
         $self->tail = $tail;
