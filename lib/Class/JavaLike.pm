@@ -8,9 +8,10 @@ our $VERSION = "0.01";
 =pod
 keywords
 
+- Class::JavaLike
+  - abstract_class
+  - class
 - abstract
-- abstract_class
-- class
 - constructor
 - extends
 - method
@@ -24,11 +25,27 @@ sub class {
     my $body = pop @after;
     my @extends = \@after;
 
-    Class::JavaLike::Builder->build_class({
+    _build_class({
         class_name => $class_name,
         extends    => $extends,
         body       => $body,
     });
+}
+
+sub _build_class {
+    my $params = shift;
+    my ($class_name, $extends, $body) = @$params{qw(class_name extends body)};
+
+    local $_ = $class_name;
+    for my $parent (@$extends) {
+        _set_extends($parent);
+    }
+
+}
+
+sub _pkg_name {
+    my $class = shift;
+    return "Class::JavaLike::Class::$class";
 }
 
 1;
