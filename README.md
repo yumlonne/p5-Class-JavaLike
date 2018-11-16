@@ -1,3 +1,22 @@
+\- Class::JavaLike
+  - abstract\_class
+  - class
+\- abstract
+\- constructor
+\- extends
+\- method
+\- override
+\- public
+
+- public
+USAGE:
+    public hoge => Any => Any => Int => $method\_type {};
+    hoge: method name
+    Any => Any => Int: arg types,,, => result types
+    $method\_type: method | constructor
+
+        public $var_type @vars;
+
 # NAME
 
 Class::JavaLike - It's new $module
@@ -5,6 +24,13 @@ Class::JavaLike - It's new $module
 # SYNOPSIS
 
     use Class::JavaLike;
+
+    class LinkedList => sub {
+
+    };
+
+
+    class Hoge => extends 'Fuga'
 
 # DESCRIPTION
 
@@ -20,3 +46,19 @@ it under the same terms as Perl itself.
 # AUTHOR
 
 yumlonne <yumlonne@gmail.com>
+
+# POD ERRORS
+
+Hey! **The above document had some coding errors, which are explained below:**
+
+- Around line 22:
+
+    &#x3d;pod directives shouldn't be over one line long!  Ignoring all 2 lines of content
+
+- Around line 63:
+
+    '=item' outside of any '=over'
+
+- Around line 234:
+
+    You forgot a '=back' before '=head1'

@@ -3,6 +3,20 @@ use 5.008001;
 use strict;
 use warnings;
 
+use Exporter 'import';
+our @EXPORT = qw(
+    abstract
+    abstract_class
+    constructor
+    class
+    classof
+    extends
+    method
+    override
+    public
+    protected
+    private
+);
 our $VERSION = "0.01";
 
 =pod
@@ -23,7 +37,7 @@ keywords
 sub class {
     my ($class_name, @after) = @_;
     my $body = pop @after;
-    my @extends = \@after;
+    my $extends = \@after;
 
     _build_class({
         class_name => $class_name,
@@ -32,18 +46,119 @@ sub class {
     });
 }
 
-sub _build_class {
-    my $params = shift;
-    my ($class_name, $extends, $body) = @$params{qw(class_name extends body)};
+# TODO
+sub abstract {}
+sub abstract_class {}
+sub constructor(&) {
+    my $sub = shift;
+    return +{ type => 'constructor', sub => $sub };
+}
+sub extends { return shift; }
+sub method(&) {
+    my $sub = shift;
+    return +{ type => 'method', sub => $sub };
+}
+sub override {}
 
-    local $_ = $class_name;
-    for my $parent (@$extends) {
-        _set_extends($parent);
+=pod
+USAGE:
+    public hoge => Any => Any => Int => $method_type {};
+    hoge: method name
+    Any => Any => Int: arg types,,, => result types
+    $method_type: method | constructor
+
+    public $var_type @vars;
+
+=cut
+sub public {
+    my @args = @_;
+    my $last = $args[-1];
+
+    if (ref $last eq 'HASH' && exists $last->{type} && $last->{type} =~ /method|constructor/) {
+        return _public_method(@_);
+    }
+    return _public_var(@_);
+}
+
+sub _public_method {
+    my @args = @_;
+    my $method_name = shift @args;
+    my $last_hash = pop @args;
+    my $class = $_;
+    no strict;
+
+    if ($last_hash->{type} eq 'method') {
+        # FIXME: type constraint
+        # FIXME: redefine error
+        *{ "${class}::${method_name}" } = $last_hash->{sub};
+        return;
+    }
+    # constructor
+    *{ "${class}::${method_name}" } = sub {
+        my ($class, @args) = @_;
+        my $instance = bless +{} => $class;
+        $last_hash->{sub}->($instance, @args);
+    };
+}
+
+sub _public_var {
+    my ($var_type, @vars) = @_;
+    my $class = $_;
+
+    no strict;
+    if ($var_type eq 'var') {
+        for my $var (@vars) {
+            *{ "${class}::${var}" } = sub : lvalue { shift->{$var} };
+        }
+    }
+    elsif ($var_type eq 'val') {
+        for my $var (@vars) {
+            *{ "${class}::${var}" } = sub { shift->{$var} };
+        }
+    }
+    else {
+        die "unknown variable type $var_type";
     }
 
 }
 
-sub _pkg_name {
+sub private {}
+sub protected {}
+
+sub _build_class {
+    my $params = shift;
+    my ($class_name, $extends, $body) = @$params{qw(class_name extends body)};
+
+    for my $parent (@$extends) {
+        _set_extends($class_name, $parent);
+    }
+    local $_ = classof($class_name);
+    $body->();
+}
+
+sub _set_extends {
+    my ($class_name, $parent) = @_;
+    $class_name = classof($class_name);
+    $parent     = classof($parent);
+
+    _transplant_methods($class_name, $parent);
+    $class_name->require($parent);
+    eval sprintf(q{push @%s::ISA, '%s'}, $class_name, $parent);
+}
+
+sub _transplant_methods {
+    my ($class_name, $parent) = @_;
+
+    no strict 'refs';
+    my %symbol = eval "%${parent}::";
+    my @methods = grep { defined &{"${parent}::$_"} } keys %symbol;
+
+    for my $method (@methods) {
+        *{"${class_name}::$method"} = $symbol{$method};
+    }
+}
+
+sub classof {
     my $class = shift;
     return "Class::JavaLike::Class::$class";
 }
