@@ -75,45 +75,82 @@ sub public {
     my $last = $args[-1];
 
     if (ref $last eq 'HASH' && exists $last->{type} && $last->{type} =~ /method|constructor/) {
-        return _public_method(@_);
+        return _method('public', @_);
     }
-    return _public_var(@_);
+    return _var('public', @_);
 }
 
-sub _public_method {
+sub protected {
     my @args = @_;
+    my $last = $args[-1];
+
+    if (ref $last eq 'HASH' && exists $last->{type} && $last->{type} =~ /method|constructor/) {
+        return _method('protected', @_);
+    }
+    return _var('protected', @_);
+}
+
+sub private {
+    my @args = @_;
+    my $last = $args[-1];
+
+    if (ref $last eq 'HASH' && exists $last->{type} && $last->{type} =~ /method|constructor/) {
+        return _method('private', @_);
+    }
+    return _var('private', @_);
+}
+
+sub _method {
+    my @args = @_;
+    my $access_level = shift @args;
     my $method_name = shift @args;
     my $last_hash = pop @args;
     my $class = $_;
     no strict;
 
+    my $access_modifier = _access_modifier($access_level);
+
     if ($last_hash->{type} eq 'method') {
         # FIXME: type constraint
         # FIXME: redefine error
-        *{ "${class}::${method_name}" } = $last_hash->{sub};
+        *{ "${class}::${method_name}" } = sub {
+            $access_modifier->();
+            $last_hash->{sub}->(@_);
+        };
         return;
     }
     # constructor
+    # XXX: インスタンスを渡すためにsubでWrapしてるが
+    # callerが書き換わってしまいAccessModifierが働かない
     *{ "${class}::${method_name}" } = sub {
+        $access_modifier->();
         my ($class, @args) = @_;
         my $instance = bless +{} => $class;
         $last_hash->{sub}->($instance, @args);
     };
 }
 
-sub _public_var {
-    my ($var_type, @vars) = @_;
+sub _var {
+    my ($access_level, $var_type, @vars) = @_;
     my $class = $_;
+
+    my $access_modifier = _access_modifier($access_level);
 
     no strict;
     if ($var_type eq 'var') {
         for my $var (@vars) {
-            *{ "${class}::${var}" } = sub : lvalue { shift->{$var} };
+            *{ "${class}::${var}" } = sub : lvalue {
+                $access_modifier->();
+                shift->{$var}
+            };
         }
     }
     elsif ($var_type eq 'val') {
         for my $var (@vars) {
-            *{ "${class}::${var}" } = sub { shift->{$var} };
+            *{ "${class}::${var}" } = sub {
+                $access_modifier->();
+                shift->{$var}
+            };
         }
     }
     else {
@@ -121,9 +158,6 @@ sub _public_var {
     }
 
 }
-
-sub private {}
-sub protected {}
 
 sub _build_class {
     my $params = shift;
@@ -156,6 +190,31 @@ sub _transplant_methods {
     for my $method (@methods) {
         *{"${class_name}::$method"} = $symbol{$method};
     }
+}
+
+# Access Modifiers
+sub _access_modifier {
+    my $level = shift;
+    return \&_public if $level eq 'public';
+    return \&_protected if $level eq 'protected';
+    return \&_private if $level eq 'private';
+
+    die 'ERROR';
+}
+sub _public {}  # nothing to do
+
+sub _protected {
+    my ($c0_pkg, $c0_filename, $c0_line, $c0_sub) = caller(0);
+    my ($c1_pkg, $c1_filename, $c1_line)          = caller(1);
+    die "$c0_sub is Protected at $c1_filename line $c1_line.\n"
+        if not $c1_pkg->isa($c0_pkg);
+}
+
+sub _private {
+    my ($c0_pkg, $c0_filename, $c0_line, $c0_sub) = caller(0);
+    my ($c1_pkg, $c1_filename, $c1_line)          = caller(1);
+    die "$c0_sub is Private at $c1_filename line $c1_line.\n"
+        if $c1_pkg ne $c0_pkg;
 }
 
 sub classof {

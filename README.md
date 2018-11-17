@@ -8,14 +8,7 @@
 \- override
 \- public
 
-- public
-USAGE:
-    public hoge => Any => Any => Int => $method\_type {};
-    hoge: method name
-    Any => Any => Int: arg types,,, => result types
-    $method\_type: method | constructor
-
-        public $var_type @vars;
+    public $var_type @vars;
 
 # NAME
 
@@ -57,8 +50,4 @@ Hey! **The above document had some coding errors, which are explained below:**
 
 - Around line 63:
 
-    '=item' outside of any '=over'
-
-- Around line 234:
-
-    You forgot a '=back' before '=head1'
+    &#x3d;pod directives shouldn't be over one line long!  Ignoring all 6 lines of content
