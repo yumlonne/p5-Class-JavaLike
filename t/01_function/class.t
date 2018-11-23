@@ -8,7 +8,7 @@ use Class::JavaLike;
 describe 'about `class` function' => sub {
     before all => sub {
         class Point => sub {
-            public var => qw(x y);
+            private var => qw(x y);
 
             public new => Int => Int => Point => constructor {
                 my ($self, $x, $y) = @_;
@@ -20,7 +20,10 @@ describe 'about `class` function' => sub {
             public add => Point => Point => method {
                 my ($self, $that) = @_;
                 return classof('Point')->new($self->x + $that->x, $self->y + $that->y);
-            }
+            };
+
+            public get_x => Int => method { shift->x; };
+            public get_y => Int => method { shift->y; };
         };
     };
 
@@ -30,8 +33,8 @@ describe 'about `class` function' => sub {
         my $p1 = classof('Point')->new(1,3);
         my $p2 = classof('Point')->new(2,5);
         my $p3 = $p1->add($p2);
-        #is $p3->x, 3;
-        #is $p3->y, 8;
+        is $p3->get_x, 3;
+        is $p3->get_y, 8;
     };
 };
 
