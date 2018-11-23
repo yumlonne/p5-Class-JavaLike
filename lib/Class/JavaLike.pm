@@ -3,6 +3,8 @@ use 5.008001;
 use strict;
 use warnings;
 
+use UNIVERSAL::require;
+
 use Exporter 'import';
 our @EXPORT = qw(
     abstract
@@ -53,7 +55,7 @@ sub constructor(&) {
     my $sub = shift;
     return +{ type => 'constructor', sub => $sub };
 }
-sub extends { return shift; }
+sub extends($) { return shift; }
 sub method(&) {
     my $sub = shift;
     return +{ type => 'method', sub => $sub };

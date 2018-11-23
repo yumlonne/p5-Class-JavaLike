@@ -264,3 +264,14 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  UNIVERSAL-require-0.18
+    pathname: N/NE/NEILB/UNIVERSAL-require-0.18.tar.gz
+    provides:
+      UNIVERSAL::require 0.18
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 0
+      Test::More 0.47
+      perl 5.006
+      strict 0
+      warnings 0

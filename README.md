@@ -44,10 +44,10 @@ yumlonne <yumlonne@gmail.com>
 
 Hey! **The above document had some coding errors, which are explained below:**
 
-- Around line 22:
+- Around line 24:
 
     &#x3d;pod directives shouldn't be over one line long!  Ignoring all 2 lines of content
 
-- Around line 63:
+- Around line 65:
 
     &#x3d;pod directives shouldn't be over one line long!  Ignoring all 6 lines of content
