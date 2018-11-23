@@ -177,7 +177,7 @@ sub _set_extends {
     $class_name = classof($class_name);
     $parent     = classof($parent);
 
-    _transplant_methods($class_name, $parent);
+    #    _transplant_methods($class_name, $parent);
     $class_name->require($parent);
     eval sprintf(q{push @%s::ISA, '%s'}, $class_name, $parent);
 }
