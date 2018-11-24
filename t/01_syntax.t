@@ -3,6 +3,7 @@ use warnings;
 use utf8;
 
 use Test::Spec;
+use Types::Standard -types;
 
 use Class::JavaLike;
 
@@ -33,7 +34,7 @@ describe 'Class::JavaLike syntax' => sub {
 
     it 'constructor syntax' => sub {
         class Test5 => sub {
-            public new => Test4 => constructor {
+            public new => args[] => returns[classof 'Test4'] => constructor {
                 my $self = shift;
                 return $self;
             };
@@ -43,7 +44,7 @@ describe 'Class::JavaLike syntax' => sub {
 
     it 'method syntax' => sub {
         class Test6 => sub {
-            public hoge => method {
+            public hoge => args[] => returns[Str] => method {
                 return 'hoge';
             };
         };
@@ -53,14 +54,14 @@ describe 'Class::JavaLike syntax' => sub {
     it 'mix syntax' => sub {
         class Point2D => sub {
             public var => qw(x y);
-            public new => Int => Int => Point2D => constructor {
+            public new => args[Int, Int] => returns[classof 'Point2D'] => constructor {
                 my ($self, $x, $y) = @_;
                 $self->x = $x;
                 $self->y = $y;
                 return $self;
             };
 
-            public add => Point2D => Point2D => method {
+            public add => args[classof 'Point2D'] => returns[classof 'Point2D'] => method {
                 my ($self, $that) = @_;
                 return classof('Point2D')->new($self->x + $that->x, $self->y + $that->y);
             };
@@ -68,7 +69,7 @@ describe 'Class::JavaLike syntax' => sub {
 
         class Point3D => extends Point2D => sub {
             public var => 'z';
-            public new => Int => Int => Int => Point3D => constructor {
+            public new => args[Int ,Int ,Int] => returns[classof 'Point3D'] => constructor {
                 my ($self, $x, $y, $z) = @_;
                 $self->x = $x;
                 $self->y = $y;
@@ -76,7 +77,7 @@ describe 'Class::JavaLike syntax' => sub {
                 return $self;
             };
 
-            public add => Point3D => Point3D => method {
+            public add => args[classof 'Point3D'] => returns[classof 'Point3D'] => method {
                 my ($self, $that) = @_;
                 return classof('Point3D')->new($self->x + $that->x, $self->y + $that->y, $self->z + $that->z);
             };

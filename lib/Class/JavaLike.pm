@@ -2,13 +2,17 @@ package Class::JavaLike;
 use 5.008001;
 use strict;
 use warnings;
+use Data::Dumper;
 
 use UNIVERSAL::require;
+use Types::Standard -types;
 
 use Exporter 'import';
 our @EXPORT = qw(
     abstract
     abstract_class
+    args
+    returns
     constructor
     class
     classof
@@ -51,6 +55,10 @@ sub class {
 # TODO
 sub abstract {}
 sub abstract_class {}
+
+sub args($) { return shift; }
+sub returns($) { return shift; }
+
 sub constructor(&) {
     my $sub = shift;
     return +{ type => 'constructor', sub => $sub };
@@ -107,6 +115,7 @@ sub _method {
     my $access_level = shift @args;
     my $method_name = shift @args;
     my $last_hash = pop @args;
+    my ($args_constraint, $returns_constraint) = @args;
     my $class = $_;
     no strict;
 
@@ -115,15 +124,25 @@ sub _method {
     if ($last_hash->{type} eq 'method') {
         # FIXME: type constraint
         # FIXME: redefine error
+        unshift @$args_constraint, $class;
+        my %class_constraint;
+        for my $idx (0..scalar($#$args_constraint)) {
+            my $constraint = $args_constraint->[$idx];
+            next if ref $constraint eq 'Type::Tiny';
+            $args_constraint->[$idx] = Any;
+            $class_constraint{$idx} = $constraint;
+        }
+
         *{ "${class}::${method_name}" } = sub {
             $access_modifier->();
-            $last_hash->{sub}->(@_);
+            Tuple($args_constraint)->(\@_);
+            my $returns = $last_hash->{sub}->(@_);
+            #Tuple($returns_constraint)->([$returns]);
+            return $returns;
         };
         return;
     }
     # constructor
-    # XXX: インスタンスを渡すためにsubでWrapしてるが
-    # callerが書き換わってしまいAccessModifierが働かない
     *{ "${class}::${method_name}" } = sub {
         $access_modifier->();
         my ($class, @args) = @_;

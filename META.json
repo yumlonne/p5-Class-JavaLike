@@ -42,6 +42,7 @@
       },
       "runtime" : {
          "requires" : {
+            "Types::Standard" : "1.004002",
             "UNIVERSAL::require" : "0.18",
             "perl" : "5.008001"
          }
