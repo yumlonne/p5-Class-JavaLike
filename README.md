@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/yumlonne/p5-Class-JavaLike.svg?branch=master)](https://travis-ci.org/yumlonne/p5-Class-JavaLike)
+
 \- Class::JavaLike
   - abstract\_class
   - class
