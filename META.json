@@ -67,6 +67,9 @@
       }
    },
    "version" : "0.01",
+   "x_contributors" : [
+      "yumlonne <43084719+yumlonne@users.noreply.github.com>"
+   ],
    "x_serialization_backend" : "JSON::PP version 2.97001",
    "x_static_install" : 1
 }

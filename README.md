@@ -1,17 +1,3 @@
-[![Build Status](https://travis-ci.org/yumlonne/p5-Class-JavaLike.svg?branch=master)](https://travis-ci.org/yumlonne/p5-Class-JavaLike)
-
-\- Class::JavaLike
-  - abstract\_class
-  - class
-\- abstract
-\- constructor
-\- extends
-\- method
-\- override
-\- public
-
-    public $var_type @vars;
-
 # NAME
 
 Class::JavaLike - It's new $module
@@ -19,13 +5,40 @@ Class::JavaLike - It's new $module
 # SYNOPSIS
 
     use Class::JavaLike;
+    use Types::Standard;
 
-    class LinkedList => sub {
+    # define class
+    class Point2D => sub {
+        # define variables
+        public var => qw(x y);
 
+        # define constructor
+        public new => args[Int, Int] => returns[classof 'Point2D'] => constructor {
+            my ($self, $x, $y) = @_;
+            $self->x = $x;
+            $self->y = $y;
+            return $self
+        };
+
+        # define method
+        public add => args[classof 'Point2D'] => returns[classof 'Point2D'] => method {
+            my ($self, $that) = @_;
+            return classof('Point2D')->new($self->x + $that->x, $self->y + $that->y);
+        };
+
+        public negate => args[] => returns[classof 'Point2D'] => method {
+            my $self = shift;
+            return classof('Point2D')->new(-$self->x, -$self->y);
+        };
     };
 
+    # usage
+    my $p1  = classof('Point2D')->new(10, 20);
+    my $p2  = classof('Point2D')->new(22, 18);
+    my $res = $p1->add($p2);
 
-    class Hoge => extends 'Fuga'
+    say $res->x;    # -> 32
+    say $res->y;    # -> 38
 
 # DESCRIPTION
 
@@ -41,15 +54,3 @@ it under the same terms as Perl itself.
 # AUTHOR
 
 yumlonne <yumlonne@gmail.com>
-
-# POD ERRORS
-
-Hey! **The above document had some coding errors, which are explained below:**
-
-- Around line 28:
-
-    &#x3d;pod directives shouldn't be over one line long!  Ignoring all 2 lines of content
-
-- Around line 73:
-
-    &#x3d;pod directives shouldn't be over one line long!  Ignoring all 6 lines of content

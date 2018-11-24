@@ -25,21 +25,6 @@ our @EXPORT = qw(
 );
 our $VERSION = "0.01";
 
-=pod
-keywords
-
-- Class::JavaLike
-  - abstract_class
-  - class
-- abstract
-- constructor
-- extends
-- method
-- override
-- public
-
-=cut
-
 sub class {
     my ($class_name, @after) = @_;
     my $body = pop @after;
@@ -70,16 +55,6 @@ sub method(&) {
 }
 sub override {}
 
-=pod
-USAGE:
-    public hoge => Any => Any => Int => $method_type {};
-    hoge: method name
-    Any => Any => Int: arg types,,, => result types
-    $method_type: method | constructor
-
-    public $var_type @vars;
-
-=cut
 sub public {
     my @args = @_;
     my $last = $args[-1];
@@ -136,7 +111,11 @@ sub _method {
         *{ "${class}::${method_name}" } = sub {
             $access_modifier->();
             Tuple($args_constraint)->(\@_);
+            while (my ($idx, $class) = each %class_constraint) {
+                die "$_[$idx] ain't a $class" if not $_[$idx]->isa($class);
+            }
             my $returns = $last_hash->{sub}->(@_);
+            # TODO return type constraint
             #Tuple($returns_constraint)->([$returns]);
             return $returns;
         };
@@ -246,69 +225,6 @@ sub classof {
 1;
 __END__
 
-abstract_class LinkedList => sub {
-    abstract head => type->Any;
-    abstract tail => type->LinkedList;
-    abstract each => type->Sub => type->Any;
-
-    public from_arrayref => Any => LinkedList => method {
-        my ($self, $arrayref) = @_;
-        my $size = @$arrayref;
-        if ($size == 0) {
-            return new('Nil');
-        }
-        else ($size == 1) {
-            return new(Cons => shift $arrayref, new('Nil'));
-        }
-        else {
-            my $linked_list = new('Nil');
-            while (my $elem = pop $arrayref) {
-                $linked_list = new('Cons' => $elem, $linked_list);
-            }
-            return $linked_list;
-        }
-    };
-};
-
-class Cons => extends LinkedList => sub {
-    readonly (
-        head => Any,
-        tail => LinkedList,
-    );
-
-    constructor Any => LinkedList => Cons => method {
-        my ($self, $head, $tail) = @_;
-        $self->head = $head;
-        $self->tail = $tail;
-        $self;
-    };
-
-    override each => CODE => Any => method {
-        my ($self, $sub) = @_;
-        $sub->($self->head);
-        $self->tail->each($sub);
-    };
-
-};
-
-class Nil => extends LinkedList => sub {
-    public head => Any        => method { die 'called Nil->head' }
-    public tail => LinkedList => method { die 'called Nil->tail' }
-
-    public new => Nil => constructor {
-        my $self = shift;
-        return $self;
-    };
-
-    override each => CODE => Any => method {
-        # nothing
-    };
-};
-
-
-1;
-__END__
-
 =encoding utf-8
 
 =head1 NAME
@@ -318,13 +234,40 @@ Class::JavaLike - It's new $module
 =head1 SYNOPSIS
 
     use Class::JavaLike;
+    use Types::Standard;
 
-    class LinkedList => sub {
+    # define class
+    class Point2D => sub {
+        # define variables
+        public var => qw(x y);
 
+        # define constructor
+        public new => args[Int, Int] => returns[classof 'Point2D'] => constructor {
+            my ($self, $x, $y) = @_;
+            $self->x = $x;
+            $self->y = $y;
+            return $self
+        };
+
+        # define method
+        public add => args[classof 'Point2D'] => returns[classof 'Point2D'] => method {
+            my ($self, $that) = @_;
+            return classof('Point2D')->new($self->x + $that->x, $self->y + $that->y);
+        };
+
+        public negate => args[] => returns[classof 'Point2D'] => method {
+            my $self = shift;
+            return classof('Point2D')->new(-$self->x, -$self->y);
+        };
     };
 
+    # usage
+    my $p1  = classof('Point2D')->new(10, 20);
+    my $p2  = classof('Point2D')->new(22, 18);
+    my $res = $p1->add($p2);
 
-    class Hoge => extends 'Fuga'
+    say $res->x;    # -> 32
+    say $res->y;    # -> 38
 
 =head1 DESCRIPTION
 
