@@ -5,6 +5,7 @@ Class::JavaLike - It's new $module
 # SYNOPSIS
 
     use Class::JavaLike;
+    use Class::JavaLike::Classes;
     use Types::Standard;
 
     # define class
@@ -13,7 +14,7 @@ Class::JavaLike - It's new $module
         public var => qw(x y);
 
         # define constructor
-        public new => args[Int, Int] => returns[classof 'Point2D'] => constructor {
+        public new => args[Int, Int] => returns[classes->Point2D] => constructor {
             my ($self, $x, $y) = @_;
             $self->x = $x;
             $self->y = $y;
@@ -21,12 +22,12 @@ Class::JavaLike - It's new $module
         };
 
         # define method
-        public add => args[classof 'Point2D'] => returns[classof 'Point2D'] => method {
+        public add => args[classes->Point2D] => returns[classes->Point2D] => method {
             my ($self, $that) = @_;
             return classof('Point2D')->new($self->x + $that->x, $self->y + $that->y);
         };
 
-        public negate => args[] => returns[classof 'Point2D'] => method {
+        public negate => args[] => returns[classes->Point2D] => method {
             my $self = shift;
             return classof('Point2D')->new(-$self->x, -$self->y);
         };
