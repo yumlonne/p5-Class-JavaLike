@@ -24,18 +24,18 @@ Class::JavaLike - It's new $module
         # define method
         public add => args[classes->Point2D] => returns[classes->Point2D] => method {
             my ($self, $that) = @_;
-            return classof('Point2D')->new($self->x + $that->x, $self->y + $that->y);
+            return classes->Point2D->new($self->x + $that->x, $self->y + $that->y);
         };
 
         public negate => args[] => returns[classes->Point2D] => method {
             my $self = shift;
-            return classof('Point2D')->new(-$self->x, -$self->y);
+            return classes->Point2D->new(-$self->x, -$self->y);
         };
     };
 
     # usage
-    my $p1  = classof('Point2D')->new(10, 20);
-    my $p2  = classof('Point2D')->new(22, 18);
+    my $p1  = classes->Point2D->new(10, 20);
+    my $p2  = classes->Point2D->new(22, 18);
     my $res = $p1->add($p2);
 
     say $res->x;    # -> 32
