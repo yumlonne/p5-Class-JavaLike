@@ -22,6 +22,8 @@ our @EXPORT = qw(
     public
     protected
     private
+    var
+    val
 );
 our $VERSION = "0.01";
 
@@ -85,6 +87,14 @@ sub private {
     return _var('private', @_);
 }
 
+sub var {
+    return var => @_;
+}
+
+sub val {
+    return val => @_;
+}
+
 sub _method {
     my @args = @_;
     my $access_level = shift @args;
@@ -136,20 +146,29 @@ sub _var {
 
     my $access_modifier = _access_modifier($access_level);
 
-    no strict;
+    no strict 'refs';
     if ($var_type eq 'var') {
         for my $var (@vars) {
             *{ "${class}::${var}" } = sub : lvalue {
                 $access_modifier->();
-                shift->{$var}
+                shift->{$var};
             };
         }
     }
     elsif ($var_type eq 'val') {
         for my $var (@vars) {
-            *{ "${class}::${var}" } = sub {
+            *{ "${class}::${var}" } = sub : lvalue {
+                my $self = shift;
                 $access_modifier->();
-                shift->{$var}
+                my ($c0_pkg, $c0_filename, $c0_line, $c0_sub) = caller(0);
+                my ($c1_pkg, $c1_filename, $c1_line)          = caller(2);
+                if ($c1_pkg->isa($c0_pkg)) {
+                    $self->{$var};
+                }
+                else {
+                    my $tmp = $self->{$var};
+                    return $tmp;
+                }
             };
         }
     }
@@ -206,6 +225,8 @@ sub _public {}  # nothing to do
 sub _protected {
     my ($c0_pkg, $c0_filename, $c0_line, $c0_sub) = caller(0);
     my ($c1_pkg, $c1_filename, $c1_line)          = caller(2);
+    warn "c0 $c0_pkg";
+    warn "c2 $c1_pkg";
     die "$c0_sub is Protected at $c1_filename line $c1_line.\n"
         if not $c1_pkg->isa($c0_pkg);
 }
